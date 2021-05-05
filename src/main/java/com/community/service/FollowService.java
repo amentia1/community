@@ -29,9 +29,9 @@ public class FollowService implements CommunityConstant {
     /**
      * 关注
      * 因为两个操作（关注和被关注）得都成功，要不就都失败。所以使用事务
-     * @param userId
-     * @param entityType
-     * @param entityId
+     * @param userId 谁关注的
+     * @param entityType 关注的实体类型
+     * @param entityId 实体id（目前这里是 关注目标的id）（未来可以扩展为关注帖子的id）
      */
     public void follow(int userId, int entityType, int entityId) {
         redisTemplate.execute(new SessionCallback() {
@@ -109,7 +109,7 @@ public class FollowService implements CommunityConstant {
      * @param userId
      * @param entityType
      * @param entityId
-     * @return 查询当前用户是否关注该实体
+     * @return 查询某用户是否关注该实体
      */
     public boolean hasFollowed(int userId, int entityType, int entityId) {
         String followeeKey = RedisUtil.getFolloweeKey(userId, entityType);

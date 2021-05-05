@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.Method;
 
 /**
+ * 拦截一些需要登录的页面
  * @author flunggg
  * @date 2020/7/25 10:26
  * @Email: chaste86@163.com

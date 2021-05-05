@@ -1,5 +1,6 @@
 package com.community.entity;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -8,7 +9,7 @@ import java.util.Date;
  * @date 2020/7/23 9:13
  * @Email: chaste86@163.com
  */
-public class LoginTicket {
+public class LoginTicket implements Serializable {
     private int id;
     private int userId;
     private String ticket;

@@ -58,7 +58,7 @@ public class DiscussPostController implements CommunityConstant {
     public String addDiscussPost(String title, String content) {
         User user = hostHolder.getUser();
         if(user == null) {
-            return CommunityUtil.getJSONString(403, "您还未登录噢！");
+            return CommunityUtil.getJSONString(403, "登录过期，请重新登录!");
         }
         if(StringUtils.isBlank(title)) {
             return CommunityUtil.getJSONString(403, "标题不能为空");
@@ -90,13 +90,12 @@ public class DiscussPostController implements CommunityConstant {
         // 而且对顺序没有要求，比如前一次对A点赞，那么统计分数，后一次又对A点赞，又得统计，还不如去重，选个最晚的统计分数
         redisTemplate.opsForSet().add(redisKey, discussPost.getId());
 
-
         return CommunityUtil.getJSONString(200, "发布成功！");
     }
 
     /**
      * 本来可以使用联合查询，把帖子和用户信息一起查出来，速度快点，但是缺点就是有耦合
-     * 另一种就是：先查帖子，再根据帖子的用户id去查用户信息，后面会使用redis来提高速度
+     * 另一种就是：先查帖子，再根据帖子的用户id去查用户信息，然后使用redis来提高速度
      * @param discussPostId 帖子id
      * @param model
      * @param page 要分页就需要用，然后封装进model
@@ -140,7 +139,7 @@ public class DiscussPostController implements CommunityConstant {
                 likeStatus = hostHolder.getUser() == null ? 0 :
                         likeService.findEntityLikeStatus(hostHolder.getUser().getId(), ENTITY_TYPE_COMMENT, comment.getId());
                 commentAndUser.put("likeStatus", likeStatus);
-                // 还有楼中楼评论，需要的是评论的id, 不需要分页，全部查出
+                // 还有楼中楼评论，需要的是评论的id, 不需要分页，全部查出，只需要知道entityId如果是在Comment表中存在的话，那么说明是楼中楼评论
                 List<Comment> replyComment = commentService.findCommentsByEntity(ENTITY_TYPE_COMMENT, comment.getId(), 0, Integer.MAX_VALUE);
                 // 楼中楼评论还包含用户，有多个楼中楼
                 List<Map<String, Object>> replyAndUserList = new ArrayList<>();
@@ -186,8 +185,10 @@ public class DiscussPostController implements CommunityConstant {
     @PostMapping("/top")
     @ResponseBody
     public String setTop(int id) {
+        if(hostHolder.getUser() == null) {
+            return CommunityUtil.getJSONString(403, "登录过期，请重新登录!");
+        }
         discussPostService.updateType(id, 1);
-
         // 引入ES
         // 触发更新帖子事件，把事件存入ES
         // 更新
@@ -208,8 +209,10 @@ public class DiscussPostController implements CommunityConstant {
     @PostMapping("/wonderful")
     @ResponseBody
     public String setWonderful(int id) {
+        if(hostHolder.getUser() == null) {
+            return CommunityUtil.getJSONString(403, "登录过期，请重新登录!");
+        }
         discussPostService.updateStatus(id, 1);
-
         // 引入ES
         // 触发更新帖子事件，把事件存入ES
         // 更新
@@ -235,8 +238,10 @@ public class DiscussPostController implements CommunityConstant {
     @PostMapping("/delete")
     @ResponseBody
     public String setDelete(int id) {
+        if(hostHolder.getUser() == null) {
+            return CommunityUtil.getJSONString(403, "登录过期，请重新登录!");
+        }
         discussPostService.updateStatus(id, 2);
-
         // 引入ES
         // 触发删除帖子事件
         Event event = new Event()

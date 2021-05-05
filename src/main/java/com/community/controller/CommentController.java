@@ -61,7 +61,7 @@ public class CommentController implements CommunityConstant {
         commentService.addComment(comment);
 
         // 评论后，触发评论事件，去通知被评论的用户
-        // 需要带上帖子id
+        // 需要带上帖子id，因为如果是楼中楼评论，entityId只能知道是哪个评论，不能知道拿找帖子。
         Event event = new Event()
                 .setTopic(TOPIC_COMMENT)
                 .setUserId(hostHolder.getUser().getId())

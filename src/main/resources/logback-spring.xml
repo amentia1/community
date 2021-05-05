@@ -2,8 +2,8 @@
 <configuration>
     <!--这个文件是工具文件，只需要该property的value，和后面的logger的name-->
     <contextName>community</contextName>
-    <!--下面两个表示的是 D:/work/data/community-->
-    <property name="LOG_PATH" value="D:/work/data"/>
+    <!--表示日志存放的目录 D:/毕设/community-->
+    <property name="LOG_PATH" value="D:/毕设"/>
     <property name="APPDIR" value="community"/>
 
     <!-- error file -->

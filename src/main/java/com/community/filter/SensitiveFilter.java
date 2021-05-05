@@ -117,9 +117,9 @@ public class SensitiveFilter {
 
         // 指针1：指向树
         TireNode curNode = root;
-        // 指针2：表示的是一串子串，范围是[begin, position]
+        // 指针2：表示的是一串子串的开头，范围是[begin, position]
         int begin = 0;
-        // 指针3：如果字符串的一个字符为敏感词的第一个字符，那么position就需要遍历begin后的字符与敏感词的字符，一一比较
+        // 指针3：如果begin指向的字符存在当前前缀树中（根节点下的子节点），那么会启动position，从begin开始向后的字符与敏感词的字符，一一比较
         int position = 0;
         // 结果集
         StringBuffer result = new StringBuffer();
@@ -149,10 +149,9 @@ public class SensitiveFilter {
                 continue;
             }
 
-            // 前缀树的字符存储在边上，节点不存信息，所以可以通过字符去查询有没有这条边，有的话拿出节点
-            // 检查下一级节点
+            // 检查前缀树中的子节点是否含有该字符
             // 情况一：根节点没有存东西，要查询就得去它的下级节点
-            // 情况二：可能已经进入前缀树，上一级已经处理好，这轮处理它的下一级
+            // 情况二：可能已经进入前缀树，本级已经处理好，这轮处理它的下一级
             curNode = curNode.getTireNode(c);
             if(curNode == null) {
                 // 如果没有，说明[begin,position]字符串不是敏感词
@@ -185,9 +184,10 @@ public class SensitiveFilter {
                 position++;
             }
         }
-
-        // 情况：比如到达最后2个字符，第一个是敏感词字符之一，而第二个不是，此时position就走完了
-        // 得将最后一批字符计入
+        System.out.println(begin);
+        System.out.println(position);
+        // 情况：比如fa☆，如果敏感词是fac的话，而且此时因为判断特殊字符那里的position++导致到字符串末尾，那么下一次就不会循环，而从begin开始的子串都不会加到结果集中
+        // 所以出现这样的情况得将最后一批字符计入
         return begin < text.length() ? result.append(text.substring(begin)).toString() : result.toString();
     }
 

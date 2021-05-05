@@ -7,9 +7,11 @@ import org.apache.ibatis.annotations.Mapper;
  * @author flunggg
  * @date 2020/7/18 20:00
  * @Email: chaste86@163.com
+ *
+ * 也可以用@Repository，如果不加这个，可能在@Autowise时会红色，但是可以允许，如果不想红色，可以加上去，同时有两个注解
+ * 因为@Mapper是Mybatis的注解，他的作用是表明该类是Mapper，
+ * Reponsity是Spring的注解，他的作用的是标明该类是个bean，所以如果使用依赖注入，编译时会以为这不是bean不能加入注入
  */
-// 也可以用@Repository，如果不加这个，可能在@Autowise时会红色，但是可以允许，如果不想红色，可以加上去，同时有两个注解
-// 因为@Mapper是Mybatis的注解，他的作用是表明该类是Mapper，Reponsity是Spring的注解，他的作用的是标明该类是个bean
 @Mapper
 public interface UserMapper {
 
@@ -28,6 +30,5 @@ public interface UserMapper {
     int updatePassword(int id, String password);
 
     int forgetPassword(String email, String password);
-
 
 }

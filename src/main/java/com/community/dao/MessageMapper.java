@@ -48,4 +48,8 @@ public interface MessageMapper {
 
     // 查询某个主题下所有的通知，需要分页
     List<Message> selectNotices(int userId, String topic, int offset, int limit);
+
+    Message selectByIdAndConversationId(int id, String conversationId);
+
+    Message selectById(int id);
 }

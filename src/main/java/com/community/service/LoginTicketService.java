@@ -72,22 +72,25 @@ public class LoginTicketService {
             return map;
         }
 
+
         // 生成登录凭证
         LoginTicket loginTicket = new LoginTicket();
         loginTicket.setUserId(user.getId());
         loginTicket.setTicket(CommunityUtil.generateUUID());
         loginTicket.setStatus(0);
+        // 这里得转为毫秒
         loginTicket.setExpired(new Date(System.currentTimeMillis() + expiredSeconds * 1000));
 
         // 重构：使用 Redis 代替
+        // 刚开始就直接放入mysql中
         // loginTicketMapper.insertLoginTicket(loginTicket);
-        // 存入 Redis
+        // 以生成的登录凭证作为key
         String loginTicketKey = RedisUtil.getTicketKey(loginTicket.getTicket());
         // 虽然 loginTicket 是一个对象，而opsForValue存入的是字符串，但是在Redis配置类已经设置了，自动序列化为JSON字符串
         redisTemplate.opsForValue().set(loginTicketKey, loginTicket);
 
         // 我们只需要ticket
-        map.put("loginUser", user);
+        // map.put("loginUser", user);
         map.put("ticket", loginTicket.getTicket());
         return map;
     }

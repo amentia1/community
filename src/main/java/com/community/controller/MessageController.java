@@ -40,7 +40,6 @@ public class MessageController implements CommunityConstant {
 
     /**
      * 私信列表
-     *
      * @param model
      * @param page
      * @return
@@ -49,6 +48,11 @@ public class MessageController implements CommunityConstant {
     public String getLetters(Model model, Page page) {
         // 需要判断user
         User user = hostHolder.getUser();
+        if(user == null) {
+            // 因为已经拦截没有登录不能进入这个页面，所以这里如果user为空，说明登录过期
+            model.addAttribute("msg", "登录过期，请重新登录！");
+            return "/site/login";
+        }
         // 分页
         page.setLimit(5);
         page.setPath("/letter/list");
@@ -81,7 +85,6 @@ public class MessageController implements CommunityConstant {
     /**
      * 私信详情列表
      * 并把未读的改为已读
-     *
      * @param conversationId
      * @param model
      * @param page
@@ -89,6 +92,11 @@ public class MessageController implements CommunityConstant {
      */
     @GetMapping("/letter/detail/{conversationId}")
     public String getDetailLetters(@PathVariable("conversationId") String conversationId, Model model, Page page) {
+        User user = hostHolder.getUser();
+        if(user == null) {
+            model.addAttribute("msg", "登录过期，请重新登录！");
+            return "/site/login";
+        }
         // 分页
         page.setLimit(5);
         page.setRows(messageService.findLetterCount(conversationId));
@@ -134,21 +142,20 @@ public class MessageController implements CommunityConstant {
 
     /**
      * 得到私信的对象用户
-     *
+     * 2020/9/17：修改了 conversationId，保证是以发送者开头的
      * @param conversationId
      * @return
      */
     private User getLetterTarget(String conversationId) {
         String[] ids = conversationId.split("_");
-        int id0 = Integer.parseInt(ids[0]);
+        // int id0 = Integer.parseInt(ids[0]);
         int id1 = Integer.parseInt(ids[1]);
-        int targetId = hostHolder.getUser().getId() == id0 ? id1 : id0;
-        return userService.findUserById(targetId);
+        // int targetId = hostHolder.getUser().getId() == id0 ? id1 : id0;
+        return userService.findUserById(id1);
     }
 
     /**
      * 异步发送私信
-     *
      * @param toName    发送给谁
      * @param toContent 发送内容
      * @return
@@ -167,34 +174,72 @@ public class MessageController implements CommunityConstant {
         if (toUser == null) {
             return CommunityUtil.getJSONString(403, "目标用户不存在");
         }
-        if(toUser.getUsername().equals(hostHolder.getUser().getUsername())) {
+        User user = hostHolder.getUser();
+        if(user == null) {
+            return CommunityUtil.getJSONString(403, "登录过期，请重新登录！");
+        }
+        if(toUser.getUsername().equals(user.getUsername())) {
             return CommunityUtil.getJSONString(403, "不能发给自己");
         }
         // 当前用户的
         User fromUser = hostHolder.getUser();
+        // 当前用户的信息
+        Message from = new Message();
+        from.setFromId(fromUser.getId());
+        from.setToId(toUser.getId());
+        from.setStatus(1);
+        from.setCreateTime(new Date());
+        from.setContent(toContent);
+        from.setConversationId(fromUser.getId() + "_" + toUser.getId());
+        messageService.insertMessage(from);
 
-        Message message = new Message();
-        message.setFromId(fromUser.getId());
-        message.setToId(toUser.getId());
-        message.setStatus(1);
-        message.setCreateTime(new Date());
-        message.setContent(toContent);
-        // 拼接conversationId, 以id小的拼在前面
-        if (fromUser.getId() < toUser.getId()) {
-            message.setConversationId(fromUser.getId() + "_" + toUser.getId());
-        } else {
-            message.setConversationId(toUser.getId() + "_" + fromUser.getId());
-        }
-        messageService.insertMessage(message);
+        // 每次插入两条，因为要删除的时候，两个人都各有数据
+        Message to = new Message();
+        to.setFromId(fromUser.getId());
+        to.setToId(toUser.getId());
+        to.setStatus(0);
+        to.setCreateTime(new Date());
+        to.setContent(toContent);
+        to.setConversationId(toUser.getId() + "_" + fromUser.getId());
+        messageService.insertMessage(to);
 
         return CommunityUtil.getJSONString(200, "发送成功！");
     }
 
+    @PostMapping("/letter/delete")
+    @ResponseBody
+    public String deleteLetter(Integer id, String conversationId) {
+        if(id < 0) {
+            return CommunityUtil.getJSONString(403, "删除失败");
+        }
+        // 还得判断是否为当前登录用户删除自己的信息
+        User fromUser = hostHolder.getUser();
+        if(fromUser == null) {
+            return CommunityUtil.getJSONString(403, "登录过期，请重新登录！");
+        }
+        // 根据 要删除的信息的id查询 发送方或者接收方是否为当前登录用户
+        Message message = messageService.findByIdAndConversationId(id, conversationId);
+        if(message.getFromId() != fromUser.getId()) {
+            return CommunityUtil.getJSONString(403, "删除失败");
+        }
+        List<Integer> list = new ArrayList<>();
+        list.add(id);
+        messageService.deleteMessage(list);
+        return CommunityUtil.getJSONString(200, "成功");
+    }
 
+    /**
+     * 获取通知信息的列表
+     * @param model
+     * @return
+     */
     @GetMapping("/notice/list")
     public String getNoticeList(Model model) {
         User user = hostHolder.getUser();
-
+        if(user == null) {
+            model.addAttribute("msg", "登录过期，请重新登录！");
+            return "/site/login";
+        }
         // 查询评论主题的通知
         Message message = messageService.findLatestNotice(user.getId(), TOPIC_COMMENT);
         if (message != null) {
@@ -279,7 +324,6 @@ public class MessageController implements CommunityConstant {
 
     /**
      * 通知的详细情况
-     *
      * @param topic
      * @param model
      * @param page
@@ -288,6 +332,10 @@ public class MessageController implements CommunityConstant {
     @GetMapping("/notice/detail/{topic}")
     public String getDetailNotices(@PathVariable("topic") String topic, Model model, Page page) {
         User user = hostHolder.getUser();
+        if(user == null) {
+            model.addAttribute("msg", "登录过期，请重新登录！");
+            return "/site/login";
+        }
         // 分页
         page.setLimit(5);
         page.setPath("/notice/detail/" + topic);
@@ -323,5 +371,28 @@ public class MessageController implements CommunityConstant {
         }
 
         return "/site/notice-detail";
+    }
+
+    @PostMapping("/notice/delete")
+    @ResponseBody
+    public String deleteNotice(Integer id) {
+        if(id < 0) {
+            return CommunityUtil.getJSONString(403, "删除失败");
+        }
+        // 还得判断是否为当前登录用户删除自己的信息
+        User fromUser = hostHolder.getUser();
+        User user = hostHolder.getUser();
+        if(user == null) {
+            return CommunityUtil.getJSONString(403, "登录过期，请重新登录！");
+        }
+        // 根据 要删除的信息的id查询 发送方或者接收方是否为当前登录用户
+        Message message = messageService.findById(id);
+        if(message.getToId() != fromUser.getId()) {
+            return CommunityUtil.getJSONString(403, "删除失败");
+        }
+        List<Integer> list = new ArrayList<>();
+        list.add(id);
+        messageService.deleteMessage(list);
+        return CommunityUtil.getJSONString(200, "成功");
     }
 }

@@ -21,6 +21,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.Date;
 
 /**
+ * 登录状态下，每次请求，顺便查出用户信息
  * @author flunggg
  * @date 2020/7/23 15:01
  * @Email: chaste86@163.com
@@ -36,7 +37,7 @@ public class LoginTicketInterceptor implements HandlerInterceptor {
 
     @Autowired
     private HostHolder hostHolder;
-
+    // controller前执行
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         Cookie cookie = CookieUtil.getValue(request, "ticket");
@@ -52,6 +53,7 @@ public class LoginTicketInterceptor implements HandlerInterceptor {
                 User user = userService.findUserById(loginTicketByTicket.getUserId());
                 // 在本次请求中持有用户，考虑到Session具有共享数据，而这里是多个浏览器发出的请求，得让线程之间隔离，使用ThraedLocal来存储
                 hostHolder.setUser(user);
+
 
                 // 引入Spring Security
                 // 构建用户认证的结果，并存入SecurityContext，以便Security授权
@@ -69,15 +71,18 @@ public class LoginTicketInterceptor implements HandlerInterceptor {
 
         return true;
     }
-
+    // controller后执行
     @Override
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
+
         User user = hostHolder.getUser();
         if (user != null && modelAndView != null) {
+            // 前端可以显示登录用户信息
             modelAndView.addObject("loginUser", user);
         }
     }
 
+    // 在TemplateEngine之后才执行
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
         hostHolder.clear();

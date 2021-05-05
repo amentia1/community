@@ -2,6 +2,7 @@ package com.community.util;
 
 /**
  * 封装分页相关的信息
+ *
  * @author flunggg
  * @date 2020/7/19 18:08
  * @Email: chaste86@163.com
@@ -21,7 +22,7 @@ public class Page {
     }
 
     public void setCurrent(int current) {
-        if(current >= 1) {
+        if (current >= 1) {
             this.current = current;
         }
     }
@@ -31,17 +32,16 @@ public class Page {
     }
 
     public void setLimit(int limit) {
-        if(limit >=1 && limit <= 100) {
+        if (limit >= 1 && limit <= 100) {
             this.limit = limit;
         }
     }
-
     public int getRows() {
         return rows;
     }
 
     public void setRows(int rows) {
-        if(rows >= 0) {
+        if (rows >= 0) {
             this.rows = rows;
         }
     }
@@ -65,7 +65,7 @@ public class Page {
      * @return 获取总页数
      */
     public int getTotal() {
-        if(rows % limit == 0) {
+        if (rows % limit == 0) {
             return rows / limit;
         } else {
             return rows / limit + 1;
@@ -82,6 +82,7 @@ public class Page {
 
     /**
      * 显示当前页右边的页数，这里只显示2页
+     *
      * @return
      */
     public int getTo() {

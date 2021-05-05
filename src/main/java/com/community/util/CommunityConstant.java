@@ -25,7 +25,7 @@ public interface CommunityConstant {
     /**
      * 默认的登录凭证超时时间
      */
-    int DEFAULT_EXPIRED_SECONDS = 3600; // 一小时
+    int DEFAULT_EXPIRED_SECONDS = 60 * 15; // 15分钟
 
     /**
      * 记住状态的登录凭证超时时间

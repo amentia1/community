@@ -8,7 +8,7 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 import java.util.Date;
 
 /**
- * 帖子
+ * 帖子的实体类
  * 引入elasticsearch，配置
  * @author flunggg
  * @date 2020/7/19 9:58
@@ -30,10 +30,10 @@ public class DiscussPost {
      * 比如：你快来，这里就可以分词：你，快，来，快来等 存入到Elasticsearch
      *
      */
-    @Field(type = FieldType.Text, analyzer = "ik_max_word", searchAnalyzer = "ik_smart")
+    @Field(type = FieldType.Text, analyzer = "ik_max_word", searchAnalyzer = "ik_max_word")
     private String title;
 
-    @Field(type = FieldType.Text, analyzer = "ik_max_word", searchAnalyzer = "ik_smart")
+    @Field(type = FieldType.Text, analyzer = "ik_max_word", searchAnalyzer = "ik_max_word")
     private String content;
 
     // 0-普通; 1-置顶;

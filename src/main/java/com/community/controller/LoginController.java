@@ -17,13 +17,17 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.imageio.ImageIO;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Map;
@@ -71,7 +75,7 @@ public class LoginController implements CommunityConstant {
     }
 
     /**
-     * @param model
+     * @param model 前后端传递信息用的组件，只要在方法参数出现，springboot会自动创建该对象
      * @param user 只要表单的name对应的值相匹配就会封装成为User
      * @return
      */
@@ -124,13 +128,13 @@ public class LoginController implements CommunityConstant {
      * 原先把验证码存到session中，现在重构，存入Redis
      */
     @GetMapping("/kaptcha")
-    public void kaptcha(HttpServletResponse response) {
+    public void kaptcha(HttpServletResponse response, HttpSession session) {
         // 生成验证码
         String verifycode = kaptchaProducer.createText();
         BufferedImage image = kaptchaProducer.createImage(verifycode);
 
         // 将验证码存入session
-        // session.setAttribute("kaptcha", text);
+        // session.setAttribute("kaptcha", verifycode);
 
         // 重构：把验证码存入Redis
         // 先创建一个临时凭证
@@ -167,25 +171,25 @@ public class LoginController implements CommunityConstant {
      */
     @PostMapping("/login")
     public String login(String username, String password, boolean rememberme, String code,
-                        Model model, HttpServletRequest request, HttpServletResponse response) {
+                        Model model, HttpServletRequest request, HttpServletResponse response, HttpSession session) {
         // 之前是从session中取验证码
         // 先判断验证码信息
         // String kaptcha = (String) session.getAttribute("kaptcha");
-
 
         // 现在从Redis中取
         String verifycode = null;
         // 获取临时凭证，通过临时凭证来获取校验码。
         // 需要注意，因为是临时的，所以如果过去就取不到，如果使用@CookieValue注解取获取kaptchaOwner，获取不到就报错，所以采用下面的方式。
         Cookie cookie = CookieUtil.getValue(request, "kaptchaOwner");
-        String kaptchaOwner = cookie.getValue() == null ? null : cookie.getValue();
-        // 如果没有失效
-        if(StringUtils.isNotBlank(kaptchaOwner)) {
-            String kaptchaKey = RedisUtil.getKaptchaKey(kaptchaOwner);
-            verifycode = (String) redisTemplate.opsForValue().get(kaptchaKey);
-        } else {
+        if(code == null) {
             model.addAttribute("codeMsg", "验证码已失效，请刷新验证码");
             return "/site/login";
+        }
+        String kaptchaOwner = cookie.getValue();
+        // 如果没有失效
+        if(kaptchaOwner != null) {
+            String kaptchaKey = RedisUtil.getKaptchaKey(kaptchaOwner);
+            verifycode = (String) redisTemplate.opsForValue().get(kaptchaKey);
         }
 
         if(StringUtils.isBlank(verifycode) || StringUtils.isBlank(code) || !code.equalsIgnoreCase(verifycode)) {
@@ -212,16 +216,21 @@ public class LoginController implements CommunityConstant {
 
     /**
      * 登出
-     * @param ticket
      * @return
      */
     @GetMapping("/logout")
-    public String logout(@CookieValue("ticket")String ticket) {
+    public String logout(HttpServletRequest request, HttpServletResponse response) {
+        Cookie cookie = CookieUtil.getValue(request, "ticket");
+        String ticket = cookie == null ? null : cookie.getValue();
+        if(ticket == null) {
+            return "redirect:/login";
+        }
         loginTicketService.logout(ticket);
 
         // 清理认证结果
         SecurityContextHolder.clearContext();
-
+        // 清除这个ticket
+        CookieUtil.set(response, cookie, 0);
         return "redirect:/login";
     }
 

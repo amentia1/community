@@ -25,7 +25,7 @@ public class MailTest {
 
     @Test
     public void testMail() {
-        mailClient.sendMail("chaste86@163.com", "Test", "Welcome");
+        mailClient.sendMail("493914958@qq.com", "Test", "Welcome");
     }
 
     @Test
@@ -34,9 +34,9 @@ public class MailTest {
         Context context = new Context();
         context.setVariable("username", "张三");
         // 主动处理
-        String content = templateEngine.process("/mail/demo", context);
+        String content = templateEngine.process("/mail/mailDemo", context);
         System.out.println(content);
 
-        mailClient.sendMail("chaste86@163.com", "Test", content);
+        mailClient.sendMail("493914958@qq.com", "Test", content);
     }
 }

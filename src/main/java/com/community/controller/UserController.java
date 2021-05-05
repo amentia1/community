@@ -171,7 +171,7 @@ public class UserController implements CommunityConstant {
     }
 
     /**
-     * 个人主页：帖子
+     * 个人主页：回复
      * @param userId
      * @param model
      * @param page
@@ -223,6 +223,9 @@ public class UserController implements CommunityConstant {
     @PostMapping("/header/url")
     @ResponseBody
     public String updateHeaderUrl(String fileName) {
+        if(hostHolder.getUser() == null) {
+            return CommunityUtil.getJSONString(403, "登录过期，请重新登录!");
+        }
         if(StringUtils.isBlank(fileName)) {
             return CommunityUtil.getJSONString(403, "文件名不能为空");
         }
@@ -325,6 +328,10 @@ public class UserController implements CommunityConstant {
         }
         // 取出当前用户
         User user = hostHolder.getUser();
+        if(user == null) {
+            model.addAttribute("msg", "登录过期，请重新登录!");
+            return "/site/login";
+        }
         // 比较旧密码是否与当前用户的密码匹配
         oldPassword = CommunityUtil.md5(oldPassword + user.getSalt());
         if(!oldPassword.equals(user.getPassword())) {

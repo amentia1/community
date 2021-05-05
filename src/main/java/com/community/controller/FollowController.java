@@ -41,13 +41,21 @@ public class FollowController implements CommunityConstant {
     @Autowired
     private EventProducer eventProducer;
 
+    /**
+     *
+     * @param entityType 关注目标的类型
+     * @param entityId 关注目标的id
+     * @return
+     */
     @PostMapping("/follow")
     @ResponseBody
     @LoginRequired
     public String follow(int entityType, int entityId) {
         // 当前登录的用户
         User user = hostHolder.getUser();
-
+        if(user == null) {
+            return CommunityUtil.getJSONString(403, "登录过期，请重新登录!");
+        }
         followService.follow(user.getId(), entityType, entityId);
 
         // 关注后，触发事件:通知关注的用户
@@ -68,7 +76,9 @@ public class FollowController implements CommunityConstant {
     @LoginRequired
     public String unfollow(int entityType, int entityId) {
         User user = hostHolder.getUser();
-
+        if(user == null) {
+            return CommunityUtil.getJSONString(403, "登录过期，请重新登录!");
+        }
         followService.unfollow(user.getId(), entityType, entityId);
 
         return CommunityUtil.getJSONString(200, "已取消关注！");

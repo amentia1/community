@@ -45,6 +45,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 .excludePathPatterns("/**/*.css", "/**/*.js", "/**/*.png", "/**/*.jpg", "/**/*.jpeg");
 
         // 登录拦截：防止访问需要登录的页面，其实在登录拦截中判断了不拦截静态资源，这里还指明不拦截静态资源，双重判断，虽然可以不要一个，但还是加上吧。
+        // 后面引入SpringSecurity可以去掉
         // registry.addInterceptor(loginRequiredInterceptor)
         //         .excludePathPatterns("/**/*.css", "/**/*.js", "/**/*.png", "/**/*.jpg", "/**/*.jpeg");
 

@@ -4,7 +4,7 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 	<link rel="icon" th:href="@{/img/icon.png}"/>
-	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" crossorigin="anonymous">
+	<link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
 	<link rel="stylesheet" th:href="@{/css/global.css}" />
 	<link rel="stylesheet" th:href="@{/css/discuss-detail.css}" />
 	<title>猿圈-帖子详情</title>
@@ -52,7 +52,7 @@
 						<div class="text-muted mt-3">
 							发布于 <b th:text="${#dates.format(post.createTime,'yyyy-MM-dd')}">时间</b>
 							<ul class="d-inline float-right">
-								<!--this表示这个a标签，整个页面赞的a标签都会去调用这个like，为了区分是点的是哪一个赞，1表示帖子类型，后面是帖子id-->
+								<!--this表示这个a标签，为了可以复用，得分清除点的是哪一个a标签的赞，1表示帖子类型，后面是帖子id-->
 								<li class="d-inline ml-2">
 									<a href="javascript:;" th:onclick="|like(this, 1, ${post.id}, ${post.userId}, ${post.id});|" class="text-primary">
 										<b th:text="${likeStatus==1?'已赞':'赞'}">赞</b> <i th:text="${likeCount}">11</i>
@@ -203,9 +203,9 @@
 		</div>
 
 	</div>
-	<script src="https://code.jquery.com/jquery-3.3.1.min.js" crossorigin="anonymous"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" crossorigin="anonymous"></script>
-	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" crossorigin="anonymous"></script>
+	<script type="text/javascript" src="https://lib.sinaapp.com/js/jquery/3.1.0/jquery-3.1.0.min.js" ></script>
+	<script th:src="@{/js/popper.min.js}"></script>
+	<script th:src="@{/js/bootstrap.min.js}"></script>
 	<script th:src="@{/js/global.js}"></script>
 	<script th:src="@{/js/discuss.js}"></script>
 </body>

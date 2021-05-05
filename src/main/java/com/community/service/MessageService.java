@@ -106,4 +106,21 @@ public class MessageService {
     public List<Message> findNotices(int userId, String topic, int offset, int limit) {
         return messageMapper.selectNotices(userId, topic, offset, limit);
     }
+
+    /**
+     * 删除信息
+     * @param ids
+     * @return
+     */
+    public int deleteMessage(List<Integer> ids) {
+        return messageMapper.updateStatus(ids, 2);
+    }
+
+    public Message findByIdAndConversationId(int id, String conversationId) {
+        return messageMapper.selectByIdAndConversationId(id, conversationId);
+    }
+
+    public Message findById(int id) {
+        return messageMapper.selectById(id);
+    }
 }

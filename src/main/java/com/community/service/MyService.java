@@ -118,7 +118,7 @@ public class MyService {
     }
 
 
-    // 可以让该方法在多线程花环境下被异步调用
+    // 可以让该方法在多线程环境下被异步调用
     // 就类似于任务
     @Async
     public void execute1() {

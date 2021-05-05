@@ -17,7 +17,13 @@ function like(btn, entityType, entityId, entityUserId, postId) {
                 $(btn).children("i").text(data.likeCount);
                 $(btn).children("b").text(data.likeStatus == 1?'已赞':'赞');
             } else {
-                alert("请登录!!");
+                if(data.msg == null) {
+                    alert("请登录!!");
+                } else {
+                    alert(data.msg);
+                    window.location.replace(CONTEXT_PATH + "/login");
+                }
+
             }
         }
     )
@@ -34,6 +40,7 @@ function setTop() {
                 $("#topBtn").attr("disabled", "disabled");
             } else {
                 alert(data.msg);
+                window.location.replace(CONTEXT_PATH + "/login");
             }
         }
     )
@@ -49,11 +56,12 @@ function setWonderful() {
                 $("#wonderfulBtn").attr("disabled", "disabled");
             } else {
                 alert(data.msg);
+                window.location.replace(CONTEXT_PATH + "/login");
             }
         }
     )
 }
-// 置顶
+// 删除
 function setDelete() {
     $.post(
         CONTEXT_PATH + "/discuss/delete",
@@ -64,6 +72,7 @@ function setDelete() {
                 location.href = CONTEXT_PATH + "/index";
             } else {
                 alert(data.msg);
+                window.location.replace(CONTEXT_PATH + "/login");
             }
         }
     )

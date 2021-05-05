@@ -34,6 +34,7 @@ function follow() {
 					window.location.reload();
 				} else {
 					alert(data.msg);
+					window.location.replace(CONTEXT_PATH + "/login");
 				}
 			}
 		)

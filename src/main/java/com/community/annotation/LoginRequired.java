@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 登录拦截
+ * 登录拦截标记
  * @author flunggg
  * @date 2020/7/25 10:24
  * @Email: chaste86@163.com

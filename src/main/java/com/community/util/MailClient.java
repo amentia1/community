@@ -12,11 +12,13 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
 /**
+ * 邮件的工具类
  * @author flunggg
  * @date 2020/7/21 9:16
  * @Email: chaste86@163.com
+ *
+ * 需要加上@Component，表示通用的bean
  */
-// 加上@Component，表示通用的bean
 @Component
 public class MailClient {
 
@@ -41,9 +43,9 @@ public class MailClient {
             // MimeMessage是空的，还需要添加内容，借助MimeMessageHelper
             MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage);
             // 设置
-            mimeMessageHelper.setFrom(from);
-            mimeMessageHelper.setTo(to);
-            mimeMessageHelper.setSubject(subject);
+            mimeMessageHelper.setFrom(from); // 发送方
+            mimeMessageHelper.setTo(to); // 接收方
+            mimeMessageHelper.setSubject(subject); // 内容
             // 默认为普通文件，后面加个true为html
             mimeMessageHelper.setText(content, true);
             // 发送

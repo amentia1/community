@@ -35,7 +35,7 @@ public class HomeController implements CommunityConstant {
     private LikeService likeService;
 
     /**
-     * 查询论贴列表
+     * 查询帖子列表
      * @param model 前后端传递数据
      * @param page 分页
      * @param orderMode 代码重构：新增热榜模块
@@ -45,7 +45,7 @@ public class HomeController implements CommunityConstant {
     public String getIndexPage(Model model, Page page, @RequestParam(name = "orderMode", defaultValue = "0") int orderMode) {
         // 方法调用前，SpringMvc会自动实例化Model和Page，并将Page注入到Model
         // 所以，在thymeleaf可以直接访问Page对象中的数据
-        // 所有实体类都会注入到Model吗
+        // 所有实体类都会注入到Model
         page.setRows(discussPostService.findDiscussPostRows(0));
         // 代码重构：新增orderMode
         page.setPath("/index?orderMode=" + orderMode);

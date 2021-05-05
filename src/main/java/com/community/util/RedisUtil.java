@@ -30,7 +30,10 @@ public class RedisUtil {
     private static final String PREFIX_POST = "post";
 
     /**
-     * 某一个实体的赞
+     * 某一个实体的赞：
+     * like:count:entityType:entityId -> set（装的是 userId）
+     * 这样也可以通过set统计一个集合的大小就可以知道某个实体获得的赞
+     * 而且将来可能需要知道谁给你点赞了
      * @param entityType
      * @param entityId
      * @return 某一个实体的赞
@@ -42,6 +45,7 @@ public class RedisUtil {
 
     /**
      * 某一个用户获得的赞
+     * like:user:userId -> string(count)
      * @param userId 某个用户
      * @return 某一个用户获得的赞
      */
@@ -51,7 +55,7 @@ public class RedisUtil {
 
     /**
      * 某个用户关注的实体（可以为人，帖子等）
-     * 格式：followee：userId：entityType -》 zset（entityId，time）
+     * followee：userId：entityType -> zset（entityId，time）
      * @param userId 某个用户
      * @param entityType 实体类型
      * @return 某个用户关注的实体的key
@@ -62,7 +66,7 @@ public class RedisUtil {
 
     /**
      * 某个实体的关注者
-     * 格式：follower：entityType：entityId -》 zset（userId，time）
+     * follower：entityType：entityId -> zset（userId，time）
      * @param entityType
      * @param entityId
      * @return
@@ -72,8 +76,9 @@ public class RedisUtil {
     }
 
     /**
-     * 登录验证码
-     * 每一个用户的验证码都是不一样的，需要识别，但是没登录之前也不知道是哪一个用户，所有用一个临时凭证来识别用户
+     * 缓存登录验证码
+     * 额外：每一个用户的验证码都是不一样的，需要识别，但是没登录之前也不知道是哪一个用户，所以用一个临时凭证来识别用户
+     *
      * @param owner 临时凭证
      * @return 登录验证码key
      */

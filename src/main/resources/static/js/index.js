@@ -34,6 +34,8 @@ function publish() {
 				// 添加成功后，刷新页面
 				if(data.code == 200) {
 					window.location.reload();
+				} else {
+					window.location.replace(CONTEXT_PATH + "/login");
 				}
 			}, 2000);
 		}

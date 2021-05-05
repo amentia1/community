@@ -2,6 +2,7 @@ package com.community.service;
 
 import com.community.dao.UserMapper;
 import com.community.entity.User;
+import com.community.filter.SensitiveFilter;
 import com.community.util.CommunityConstant;
 import com.community.util.CommunityUtil;
 import com.community.util.MailClient;
@@ -45,7 +46,8 @@ public class UserService implements CommunityConstant {
     @Value("${server.servlet.context-path}")
     private String contextPath;
 
-
+    @Autowired
+    private SensitiveFilter sensitiveFilter;
 
 
     /**
@@ -71,8 +73,7 @@ public class UserService implements CommunityConstant {
 
     /**
      * 使用Map可以封装多种情况的返回结果
-     *
-     * @param user
+     * @param user 用户信息
      * @return 注册
      */
     public Map<String, Object> register(User user) {
@@ -106,18 +107,23 @@ public class UserService implements CommunityConstant {
             map.put("emailMsg", "邮箱已被注册");
             return map;
         }
-
+        user.setUsername(sensitiveFilter.filter(user.getUsername()));
         // 设置
+        // 截取UUID前5个字符
         user.setSalt(CommunityUtil.generateUUID().substring(0, 5));
+        // 加密
         user.setPassword(CommunityUtil.md5(user.getPassword() + user.getSalt()));
         user.setType(0);
         user.setStatus(0);
         user.setCreateTime(new Date());
+        // 随机生成一串UUID
         user.setActivationCode(CommunityUtil.generateUUID());
         user.setHeaderUrl(String.format("http://images.nowcoder.com/head/%dt.png", new Random().nextInt(1000)));
+        // 插入
         userMapper.insertUser(user);
 
         // 激活邮件
+        // 设置模板的内容，可以通过模板引擎把内容传递到前端
         Context context = new Context();
         context.setVariable("email", user.getEmail());
         // http://localhost:8080/community/activation/101/uuid
@@ -130,13 +136,13 @@ public class UserService implements CommunityConstant {
     }
 
     /**
-     * @param userId
-     * @param activationCode
+     * @param userId 用户id
+     * @param activationCode 激活码
      * @return 激活状态
      */
     public int activation(int userId, String activationCode) {
         User user = userMapper.selectUserById(userId);
-        if (user.getStatus() == 1) {
+        if (user.getStatus() == ACTIVATION_REPEAT) {
             return ACTIVATION_REPEAT;
         } else if (user.getActivationCode().equals(activationCode)) {
             userMapper.updateStatus(userId, 1);
@@ -149,8 +155,8 @@ public class UserService implements CommunityConstant {
     }
 
     /**
-     * @param userId
-     * @param headerUrl
+     * @param userId 用户id
+     * @param headerUrl 用户头像
      * @return 更新头像
      */
     public int updateHeader(int userId, String headerUrl) {
@@ -161,8 +167,8 @@ public class UserService implements CommunityConstant {
     }
 
     /**
-     * @param userId
-     * @param password
+     * @param userId 用户id
+     * @param password 密码
      * @return 更新密码
      */
     public int updatePassword(int userId, String password) {
@@ -172,6 +178,12 @@ public class UserService implements CommunityConstant {
         return rows;
     }
 
+    /**
+     *
+     * @param email 邮箱
+     * @param password 密码
+     * @return 更新密码
+     */
     public int updatePassword(String email, String password) {
 
         User user = userMapper.selectUserByEmail(email);
